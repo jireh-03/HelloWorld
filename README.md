@@ -1,7 +1,5 @@
 # HelloWorld
 
-A simple Hello World application built using Node.js and Express.js.
-
 ## Description
 
 This project demonstrates a basic Express.js server that displays a "Hello World!" message.
