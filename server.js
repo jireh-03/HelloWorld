@@ -2,17 +2,21 @@ require("dotenv").config();
 
 const app = require("./src/app");
 const pool = require("./src/config/database");
+const userModel = require("./src/models/userModel");
 
 const port = 3000;
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
+async function startServer() {
+  await userModel.initializeTables();
+  await pool.query("SELECT NOW()");
 
-pool.query("SELECT NOW()")
-  .then(() => {
+  app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
     console.log("Database connected successfully");
-  })
-  .catch((err) => {
-    console.error("Database connection failed:", err.message);
   });
+}
+
+startServer().catch((error) => {
+  console.error("Server startup failed:", error.message);
+  process.exitCode = 1;
+});

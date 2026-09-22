@@ -3,6 +3,8 @@ const router = express.Router();
 
 const { students, getNextId } = require("../models/studentModel");
 
+// Authentication middleware
+const authenticateToken = require("../middleware/authMiddleware");
 
 router.post("/", (req, res) => {
     const newName = req.body.name;

@@ -1,5 +1,27 @@
 const pool = require("../config/database");
 
+const initializeTables = async () => {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      username VARCHAR(100) NOT NULL,
+      email VARCHAR(255) NOT NULL UNIQUE,
+      password TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS refresh_tokens (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      token TEXT NOT NULL UNIQUE,
+      expires_at TIMESTAMPTZ NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+};
+
 // CREATE USER
 const createUser = async (username, email, password) => {
   const result = await pool.query(
@@ -61,6 +83,7 @@ const deleteRefreshToken = async (token) => {
 
 
 module.exports = {
+  initializeTables,
   createUser,
   findUserByEmail,
   saveRefreshToken,
