@@ -1,79 +1,15 @@
 const express = require("express");
-const router = express.Router();
-
-const { students, getNextId } = require("../models/studentModel");
-
-// Authentication middleware
+const studentController = require("../controllers/studentController");
 const authenticateToken = require("../middleware/authMiddleware");
 
-router.post("/", (req, res) => {
-    const newName = req.body.name;
-    const newCourse = req.body.course;
+const router = express.Router();
 
-    const newStudent = {
-        id: getNextId(),
-        name: newName,
-        course: newCourse
-    };
+router.use(authenticateToken);
 
-    students.push(newStudent);
-
-    res.status(201).send(newStudent);
-});
-
-
-router.get("/", (req, res) => {
-    res.send(students);
-});
-
-
-router.get("/:id", (req, res) => {
-    const id = parseInt(req.params.id);
-
-    const student = students.find(student => student.id === id);
-
-    if (!student) {
-        return res.status(404).send({
-            message: "Student not found"
-        });
-    }
-
-    res.send(student);
-});
-
-
-router.put("/:id", (req, res) => {
-    const id = parseInt(req.params.id);
-
-    const student = students.find(student => student.id === id);
-
-    if (!student) {
-        return res.status(404).send({
-            message: "Student not found"
-        });
-    }
-
-    student.name = req.body.name || student.name;
-    student.course = req.body.course || student.course;
-
-    res.send(student);
-});
-
-
-router.delete("/:id", (req, res) => {
-    const id = parseInt(req.params.id);
-
-    const index = students.findIndex(student => student.id === id);
-
-    if (index === -1) {
-        return res.status(404).send({
-            message: "Student not found"
-        });
-    }
-
-    const deletedStudent = students.splice(index, 1);
-
-    res.send(deletedStudent);
-});
+router.get("/", studentController.getStudents);
+router.post("/", studentController.addStudent);
+router.get("/:id", studentController.getStudent);
+router.put("/:id", studentController.updateStudent);
+router.delete("/:id", studentController.deleteStudent);
 
 module.exports = router;

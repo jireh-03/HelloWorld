@@ -9,8 +9,6 @@ const {
   refresh
 } = require("../controllers/authController");
 
-const authenticateToken = require("../middleware/authMiddleware");
-
 // Register
 router.post("/register", register);
 
