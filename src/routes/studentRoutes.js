@@ -27,6 +27,15 @@ const router = express.Router();
  *         description: Access token required
  *       403:
  *         description: Invalid access token
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
  */
 router.get("/", authenticateToken, studentController.getStudents);
 
@@ -57,10 +66,28 @@ router.get("/", authenticateToken, studentController.getStudents);
  *     responses:
  *       201:
  *         description: Student successfully added
+ *       400:
+ *         description: Invalid input
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
  *       401:
  *         description: Access token required
  *       403:
  *         description: Invalid access token
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
  */
 router.post("/", authenticateToken, studentController.addStudent);
 
@@ -82,12 +109,30 @@ router.post("/", authenticateToken, studentController.addStudent);
  *     responses:
  *       200:
  *         description: Student found
+ *       400:
+ *         description: Invalid student ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
  *       401:
  *         description: Access token required
  *       403:
  *         description: Invalid access token
  *       404:
  *         description: Student not found
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
  */
 router.get("/:id", authenticateToken, studentController.getStudent);
 
@@ -122,12 +167,30 @@ router.get("/:id", authenticateToken, studentController.getStudent);
  *     responses:
  *       200:
  *         description: Student successfully updated
+ *       400:
+ *         description: Invalid input
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
  *       401:
  *         description: Access token required
  *       403:
  *         description: Invalid access token
  *       404:
  *         description: Student not found
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
  */
 router.put("/:id", authenticateToken, studentController.updateStudent);
 
@@ -149,12 +212,30 @@ router.put("/:id", authenticateToken, studentController.updateStudent);
  *     responses:
  *       200:
  *         description: Student successfully deleted
+ *       400:
+ *         description: Invalid student ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
  *       401:
  *         description: Access token required
  *       403:
  *         description: Invalid access token
  *       404:
  *         description: Student not found
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
  */
 router.delete("/:id", authenticateToken, studentController.deleteStudent);
 

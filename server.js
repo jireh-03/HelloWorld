@@ -3,11 +3,14 @@ require("dotenv").config();
 const app = require("./src/app");
 const pool = require("./src/config/database");
 const userModel = require("./src/models/userModel");
+const studentModel = require("./src/models/studentModel");
 
 const port = 3000;
 
 async function startServer() {
   await userModel.initializeTables();
+  await studentModel.initializeTable();
+
   await pool.query("SELECT NOW()");
 
   app.listen(port, () => {

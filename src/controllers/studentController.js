@@ -1,54 +1,188 @@
-const { students, getNextId } = require("../models/studentModel");
+const studentModel = require("../models/studentModel");
 
-const getStudents = (req, res) => {
-  res.json(students);
-};
+// GET ALL STUDENTS
+const getStudents = async (req, res) => {
+  try {
+    const students = await studentModel.getStudents();
 
-const addStudent = (req, res) => {
-  const student = {
-    id: getNextId(),
-    name: req.body.name,
-    course: req.body.course
-  };
+    res.json(students);
+  } catch (error) {
+    console.error("Get students error:", error);
 
-  students.push(student);
-  res.status(201).json(student);
-};
-
-const getStudent = (req, res) => {
-  const id = parseInt(req.params.id, 10);
-  const student = students.find((studentRecord) => studentRecord.id === id);
-
-  if (!student) {
-    return res.status(404).json({ message: "Student not found" });
+    res.status(500).json({
+      message: "Internal server error",
+    });
   }
-
-  res.json(student);
 };
 
-const updateStudent = (req, res) => {
-  const id = parseInt(req.params.id, 10);
-  const student = students.find((studentRecord) => studentRecord.id === id);
+// ADD STUDENT
+const addStudent = async (req, res) => {
+  try {
+    const { name, course } = req.body;
 
-  if (!student) {
-    return res.status(404).json({ message: "Student not found" });
+    // Required fields
+    if (name === undefined || course === undefined) {
+      return res.status(400).json({
+        message: "Name and course are required",
+      });
+    }
+
+    // Must be strings
+    if (typeof name !== "string" || typeof course !== "string") {
+      return res.status(400).json({
+        message: "Name and course must be strings",
+      });
+    }
+
+    // Cannot be empty
+    if (!name.trim() || !course.trim()) {
+      return res.status(400).json({
+        message: "Name and course cannot be empty",
+      });
+    }
+
+    const student = await studentModel.createStudent(
+      name.trim(),
+      course.trim()
+    );
+
+    res.status(201).json(student);
+  } catch (error) {
+    console.error("Add student error:", error);
+
+    res.status(500).json({
+      message: "Internal server error",
+    });
   }
-
-  student.name = req.body.name || student.name;
-  student.course = req.body.course || student.course;
-
-  res.json(student);
 };
 
-const deleteStudent = (req, res) => {
-  const id = parseInt(req.params.id, 10);
-  const index = students.findIndex((studentRecord) => studentRecord.id === id);
+// GET ONE STUDENT
+const getStudent = async (req, res) => {
+  try {
+    const id = Number(req.params.id);
 
-  if (index === -1) {
-    return res.status(404).json({ message: "Student not found" });
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({
+        message: "Student ID must be a positive number",
+      });
+    }
+
+    const student = await studentModel.getStudentById(id);
+
+    if (!student) {
+      return res.status(404).json({
+        message: "Student not found",
+      });
+    }
+
+    res.json(student);
+  } catch (error) {
+    console.error("Get student error:", error);
+
+    res.status(500).json({
+      message: "Internal server error",
+    });
   }
+};
 
-  res.json(students.splice(index, 1));
+// UPDATE STUDENT
+const updateStudent = async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const { name, course } = req.body;
+
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({
+        message: "Student ID must be a positive number",
+      });
+    }
+
+    // At least one field must be provided
+    if (name === undefined && course === undefined) {
+      return res.status(400).json({
+        message: "At least name or course is required",
+      });
+    }
+
+    // Validate name
+    if (name !== undefined) {
+      if (typeof name !== "string") {
+        return res.status(400).json({
+          message: "Name must be a string",
+        });
+      }
+
+      if (!name.trim()) {
+        return res.status(400).json({
+          message: "Name cannot be empty",
+        });
+      }
+    }
+
+    // Validate course
+    if (course !== undefined) {
+      if (typeof course !== "string") {
+        return res.status(400).json({
+          message: "Course must be a string",
+        });
+      }
+
+      if (!course.trim()) {
+        return res.status(400).json({
+          message: "Course cannot be empty",
+        });
+      }
+    }
+
+    const student = await studentModel.updateStudent(
+      id,
+      name !== undefined ? name.trim() : undefined,
+      course !== undefined ? course.trim() : undefined
+    );
+
+    if (!student) {
+      return res.status(404).json({
+        message: "Student not found",
+      });
+    }
+
+    res.json(student);
+  } catch (error) {
+    console.error("Update student error:", error);
+
+    res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};
+
+// DELETE STUDENT
+const deleteStudent = async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({
+        message: "Student ID must be a positive number",
+      });
+    }
+
+    const student = await studentModel.deleteStudent(id);
+
+    if (!student) {
+      return res.status(404).json({
+        message: "Student not found",
+      });
+    }
+
+    res.json(student);
+  } catch (error) {
+    console.error("Delete student error:", error);
+
+    res.status(500).json({
+      message: "Internal server error",
+    });
+  }
 };
 
 module.exports = {
