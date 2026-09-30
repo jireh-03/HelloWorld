@@ -1,7 +1,13 @@
 const authService = require("../services/authService");
 
+const {
+  validateRegister,
+  validateLogin,
+} = require("../validation/authValidation");
+
 const sendAuthError = (res, error, fallbackMessage) => {
   const statusCode = error.statusCode || 500;
+
   res.status(statusCode).json({
     message: error.message || fallbackMessage,
   });
@@ -10,7 +16,19 @@ const sendAuthError = (res, error, fallbackMessage) => {
 // REGISTER
 const register = async (req, res) => {
   try {
-    const user = await authService.register(req.body);
+    const validation = validateRegister(req.body);
+
+    if (!validation.valid) {
+      return res.status(400).json({
+        message: validation.message,
+      });
+    }
+
+    const user = await authService.register({
+      username: validation.username,
+      email: validation.email,
+      password: validation.password,
+    });
 
     res.status(201).json({
       message: "Registration successful",
@@ -21,11 +39,22 @@ const register = async (req, res) => {
   }
 };
 
-
 // LOGIN
 const login = async (req, res) => {
   try {
-    const { accessToken, refreshToken } = await authService.login(req.body);
+    const validation = validateLogin(req.body);
+
+    if (!validation.valid) {
+      return res.status(400).json({
+        message: validation.message,
+      });
+    }
+
+    const { accessToken, refreshToken } =
+      await authService.login({
+        email: validation.email,
+        password: validation.password,
+      });
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
@@ -38,12 +67,10 @@ const login = async (req, res) => {
       message: "Login successful",
       accessToken,
     });
-
   } catch (error) {
     sendAuthError(res, error, "Login failed");
   }
 };
-
 
 // LOGOUT
 const logout = async (req, res) => {
@@ -59,27 +86,30 @@ const logout = async (req, res) => {
     res.status(200).json({
       message: "Logout successful",
     });
-
   } catch (error) {
     sendAuthError(res, error, "Logout failed");
   }
 };
 
-
 // REFRESH ACCESS TOKEN
 const refresh = async (req, res) => {
   try {
-    const accessToken = await authService.refresh(req.cookies.refreshToken);
+    const accessToken = await authService.refresh(
+      req.cookies.refreshToken
+    );
 
     res.status(200).json({
       message: "Access token refreshed",
       accessToken,
     });
   } catch (error) {
-    sendAuthError(res, error, "Invalid or expired refresh token");
+    sendAuthError(
+      res,
+      error,
+      "Invalid or expired refresh token"
+    );
   }
 };
-
 
 module.exports = {
   register,

@@ -1,5 +1,11 @@
 const studentModel = require("../models/studentModel");
 
+const {
+  validateStudentId,
+  validateCreateStudent,
+  validateUpdateStudent,
+} = require("../validation/studentValidation");
+
 // GET ALL STUDENTS
 const getStudents = async (req, res) => {
   try {
@@ -18,32 +24,17 @@ const getStudents = async (req, res) => {
 // ADD STUDENT
 const addStudent = async (req, res) => {
   try {
-    const { name, course } = req.body;
+    const validation = validateCreateStudent(req.body);
 
-    // Required fields
-    if (name === undefined || course === undefined) {
+    if (!validation.valid) {
       return res.status(400).json({
-        message: "Name and course are required",
-      });
-    }
-
-    // Must be strings
-    if (typeof name !== "string" || typeof course !== "string") {
-      return res.status(400).json({
-        message: "Name and course must be strings",
-      });
-    }
-
-    // Cannot be empty
-    if (!name.trim() || !course.trim()) {
-      return res.status(400).json({
-        message: "Name and course cannot be empty",
+        message: validation.message,
       });
     }
 
     const student = await studentModel.createStudent(
-      name.trim(),
-      course.trim()
+      validation.name,
+      validation.course
     );
 
     res.status(201).json(student);
@@ -59,15 +50,15 @@ const addStudent = async (req, res) => {
 // GET ONE STUDENT
 const getStudent = async (req, res) => {
   try {
-    const id = Number(req.params.id);
+    const validation = validateStudentId(req.params.id);
 
-    if (!Number.isInteger(id) || id <= 0) {
+    if (!validation.valid) {
       return res.status(400).json({
-        message: "Student ID must be a positive number",
+        message: validation.message,
       });
     }
 
-    const student = await studentModel.getStudentById(id);
+    const student = await studentModel.getStudentById(validation.value);
 
     if (!student) {
       return res.status(404).json({
@@ -88,56 +79,26 @@ const getStudent = async (req, res) => {
 // UPDATE STUDENT
 const updateStudent = async (req, res) => {
   try {
-    const id = Number(req.params.id);
-    const { name, course } = req.body;
+    const idValidation = validateStudentId(req.params.id);
 
-    if (!Number.isInteger(id) || id <= 0) {
+    if (!idValidation.valid) {
       return res.status(400).json({
-        message: "Student ID must be a positive number",
+        message: idValidation.message,
       });
     }
 
-    // At least one field must be provided
-    if (name === undefined && course === undefined) {
+    const validation = validateUpdateStudent(req.body);
+
+    if (!validation.valid) {
       return res.status(400).json({
-        message: "At least name or course is required",
+        message: validation.message,
       });
-    }
-
-    // Validate name
-    if (name !== undefined) {
-      if (typeof name !== "string") {
-        return res.status(400).json({
-          message: "Name must be a string",
-        });
-      }
-
-      if (!name.trim()) {
-        return res.status(400).json({
-          message: "Name cannot be empty",
-        });
-      }
-    }
-
-    // Validate course
-    if (course !== undefined) {
-      if (typeof course !== "string") {
-        return res.status(400).json({
-          message: "Course must be a string",
-        });
-      }
-
-      if (!course.trim()) {
-        return res.status(400).json({
-          message: "Course cannot be empty",
-        });
-      }
     }
 
     const student = await studentModel.updateStudent(
-      id,
-      name !== undefined ? name.trim() : undefined,
-      course !== undefined ? course.trim() : undefined
+      idValidation.value,
+      validation.name,
+      validation.course
     );
 
     if (!student) {
@@ -159,15 +120,15 @@ const updateStudent = async (req, res) => {
 // DELETE STUDENT
 const deleteStudent = async (req, res) => {
   try {
-    const id = Number(req.params.id);
+    const validation = validateStudentId(req.params.id);
 
-    if (!Number.isInteger(id) || id <= 0) {
+    if (!validation.valid) {
       return res.status(400).json({
-        message: "Student ID must be a positive number",
+        message: validation.message,
       });
     }
 
-    const student = await studentModel.deleteStudent(id);
+    const student = await studentModel.deleteStudent(validation.value);
 
     if (!student) {
       return res.status(404).json({
